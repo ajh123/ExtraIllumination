@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "extra_illumination",
+  "version": "${version}",
+  "name": "Extra Illumination ",
+  "description": "Providing extra objects that can illuminate your world using electricity.",
+  "authors": [
+    "ajh123"
+  ],
+  "contact": {
+    "homepage": "https://github.com/ajh123/ExtraIllumination "
+  },
+  "license": "GPL-3.0",
+  "icon": "assets/extra_illumination/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.ajh123.extra_illumination.fabric.ExtraIlluminationFabric"
+    ],
+    "client": [
+      "me.ajh123.extra_illumination.fabric.client.ExtraIlluminationFabricClient"
+    ]
+  },
+  "mixins": [
+    "extra_illumination.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "architectury": ">=13.0.8",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
