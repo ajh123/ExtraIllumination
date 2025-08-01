@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -23,14 +22,14 @@ public class IlluminatedBlockEntityRenderer implements BlockEntityRenderer<Illum
     //    - no culling (so all faces draw)
     private static final RenderType GLOW_LAYER = RenderType.create(
             "extra_illumination:untextured_glow",
-            DefaultVertexFormat.POSITION_COLOR_NORMAL,
+            DefaultVertexFormat.POSITION_COLOR_LIGHTMAP,
             VertexFormat.Mode.QUADS,
             256,
             false,
             true,
             RenderType.CompositeState.builder()
                     .setShaderState(POSITION_COLOR_SHADER)        // correct built-in shader
-                    .setTransparencyState(ADDITIVE_TRANSPARENCY)  // additive blending
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY) // we are not using additive blending
                     .setLightmapState(LIGHTMAP)                  // enable lightmap
                     .setCullState(NO_CULL)                       // draw both sides
                     .setWriteMaskState(COLOR_DEPTH_WRITE)        // write color & depth
@@ -48,16 +47,31 @@ public class IlluminatedBlockEntityRenderer implements BlockEntityRenderer<Illum
                        int packedLight, int packedOverlay) {
         boolean POWERED = blockEntity.getBlockState().getValue(IlluminatedBlock.POWERED);
 
-        // Only render if the block is powered
-        if (!POWERED) {
-            return;
-        }
-
-        // fullbright
-        int fullBright = LightTexture.pack(15, 15);
+        int brightness = LightTexture.pack(15, 15);
 
         // glow color
-        float r = 0.2f, g = 0.8f, b = 0.1f, a = 1.0f;
+        int argb = blockEntity.getGlowColor().getTextureDiffuseColor();
+
+        int rInt = (argb >> 16) & 0xFF;
+        int gInt = (argb >> 8) & 0xFF;
+        int bInt = argb & 0xFF;
+
+        float r = rInt / 255f;
+        float g = gInt / 255f;
+        float b = bInt / 255f;
+
+        if (POWERED) {
+            float boost = 1.5f;
+            r = Math.min(1.0f, r * boost);
+            g = Math.min(1.0f, g * boost);
+            b = Math.min(1.0f, b * boost);
+        }
+
+        float a = 0.8f;
+
+        if (POWERED) {
+            a = 1.0f;
+        }
 
         // tiny offset to push the quad outwards along its normal
         final float zOffset = 0.002f;
@@ -119,7 +133,7 @@ public class IlluminatedBlockEntityRenderer implements BlockEntityRenderer<Illum
                 vc.addVertex(mat, pos[0], pos[1], pos[2])
                         .setColor(r, g, b, a)
                         .setOverlay(packedOverlay)
-                        .setLight(fullBright)
+                        .setLight(brightness)
                         .setNormal(n.x(), n.y(), n.z());
             }
         }
