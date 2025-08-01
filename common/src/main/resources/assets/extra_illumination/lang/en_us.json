@@ -1,0 +1,5 @@
+{
+  "block.extra_illumination.illuminated_block": "Illuminated Block",
+  "category.extra_illumination.main": "Extra Illumination",
+  "toolip.extra_illumination.color": "Color: %s"
+}

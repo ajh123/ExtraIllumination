@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=true": {
+      "model": "extra_illumination:block/illuminated_block_on"
+    },
+    "powered=false": {
+      "model": "extra_illumination:block/illuminated_block_off"
+    }
+  }
+}

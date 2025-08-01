@@ -1,0 +1,9 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "extra_illumination:block/illuminated_block",
+	"textures": {
+		"0": "extra_illumination:block/illuminated_block_off",
+		"particle": "extra_illumination:block/illuminated_block_off"
+	}
+}
