@@ -1,8 +1,12 @@
 package me.ajh123.extra_illumination.content;
 
+import dev.architectury.platform.Platform;
 import me.ajh123.extra_illumination.utils.EnergyPlatform;
 import me.ajh123.extra_illumination.utils.PlatformEnergyStorage;
 import me.ajh123.extra_illumination.foundation.AllBlockEntities;
+import net.createmod.catnip.animation.LerpedFloat;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -20,9 +24,18 @@ public class IlluminatedBlockEntity extends BlockEntity {
     private final PlatformEnergyStorage energyStorage;
     private DyeColor glowColor = DyeColor.WHITE;
 
+    public static final float GLOW_BASE_INTENSITY = 0.25f; // Base intensity for the glow effect
+
+    @Environment(EnvType.CLIENT)
+    private final LerpedFloat glow = LerpedFloat.linear();
+
     public IlluminatedBlockEntity(BlockPos pos, BlockState blockState) {
         super(AllBlockEntities.ILLUMINATED_BLOCK_ENTITY.get(), pos, blockState);
         energyStorage = EnergyPlatform.makeEnergyStorage(10, 10, 10);
+
+        if (Platform.getEnv() == EnvType.CLIENT) {
+            glow.startWithValue(0);
+        }
     }
 
     @Override
@@ -64,6 +77,11 @@ public class IlluminatedBlockEntity extends BlockEntity {
         return glowColor;
     }
 
+    @Environment(EnvType.CLIENT)
+    public LerpedFloat getGlow() {
+        return glow;
+    }
+
     public void setGlowColor(DyeColor glowColor) {
         this.glowColor = glowColor;
         if (level != null) {
@@ -83,6 +101,16 @@ public class IlluminatedBlockEntity extends BlockEntity {
                 level.setBlock(blockPos, blockState.setValue(IlluminatedBlock.POWERED, true), Block.UPDATE_ALL);
             } else {
                 level.setBlock(blockPos, blockState.setValue(IlluminatedBlock.POWERED, false), Block.UPDATE_ALL);
+            }
+        }
+
+        if (level != null && level.isClientSide) {
+            if (self.getBlockState().getValue(IlluminatedBlock.POWERED)) {
+                self.glow.chase(1,0.02, LerpedFloat.Chaser.EXP);
+                self.glow.tickChaser();
+            } else {
+                self.glow.chase(0, 0.4, LerpedFloat.Chaser.EXP);
+                self.glow.tickChaser();
             }
         }
     }

@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -12,8 +14,10 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import static me.ajh123.extra_illumination.content.IlluminatedBlockEntity.GLOW_BASE_INTENSITY;
 import static net.minecraft.client.renderer.RenderStateShard.*;
 
+@Environment(EnvType.CLIENT)
 public class IlluminatedBlockEntityRenderer implements BlockEntityRenderer<IlluminatedBlockEntity> {
     // 1) Define a custom RenderType that:
     //    - uses POSITION_COLOR shader (no tex coords)
@@ -49,7 +53,8 @@ public class IlluminatedBlockEntityRenderer implements BlockEntityRenderer<Illum
 
         int brightness = LightTexture.pack(15, 15);
 
-        // glow color
+        float glow = blockEntity.getGlow().getValue(partialTick);
+
         int argb = blockEntity.getGlowColor().getTextureDiffuseColor();
 
         int rInt = (argb >> 16) & 0xFF;
@@ -60,21 +65,18 @@ public class IlluminatedBlockEntityRenderer implements BlockEntityRenderer<Illum
         float g = gInt / 255f;
         float b = bInt / 255f;
 
-        if (POWERED) {
-            float boost = 1.5f;
-            r = Math.min(1.0f, r * boost);
-            g = Math.min(1.0f, g * boost);
-            b = Math.min(1.0f, b * boost);
+        float boost = glow + GLOW_BASE_INTENSITY;
+
+        if (!POWERED) {
+            boost = GLOW_BASE_INTENSITY;
         }
 
-        float a = 0.8f;
-
-        if (POWERED) {
-            a = 1.0f;
-        }
+        r = Math.min(1.0f, r * boost);
+        g = Math.min(1.0f, g * boost);
+        b = Math.min(1.0f, b * boost);
 
         // tiny offset to push the quad outwards along its normal
-        final float zOffset = 0.002f;
+        final float zOffset = 0.001f;
 
         // inset border of 2 pixels (2/16)
         final float inset = 2f / 16f;
@@ -131,7 +133,7 @@ public class IlluminatedBlockEntityRenderer implements BlockEntityRenderer<Illum
 
                 // Emit
                 vc.addVertex(mat, pos[0], pos[1], pos[2])
-                        .setColor(r, g, b, a)
+                        .setColor(r, g, b, 0.64f)
                         .setOverlay(packedOverlay)
                         .setLight(brightness)
                         .setNormal(n.x(), n.y(), n.z());

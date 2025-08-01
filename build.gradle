@@ -20,6 +20,14 @@ allprojects {
             name 'CurseMaven'
             url "https://cursemaven.com"
         }
+        maven {
+            name = 'CreateMod'
+            url = "https://maven.createmod.net"
+        } // Create, Ponder, Flywheel
+        maven {
+            name = 'Fuzs'
+            url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+        } // ForgeConfigAPIPort
     }
 }
 
